@@ -2,31 +2,33 @@ package main
 
 import "fmt"
 
-// Command интерфейс команды, который объявляет метод для выполнения команды.
 type Command interface {
 	Execute()
 }
 
-// ConcreteCommand конкретная реализация команды, которая выполняет действие.
+type Receiver struct{}
+
+// Operation некоторая операция, которую нужно выполнить.
+func (r *Receiver) Operation() {
+	fmt.Println("Receiver: выполнение операции.")
+}
+
+// ConcreteCommand конкретная реализация команды с ссылкой на Receiver.
 type ConcreteCommand struct {
 	receiver *Receiver
 }
 
-// Execute выполняет команду, делегируя вызов получателю.
+// NewConcreteCommand конструктор для ConcreteCommand.
+func NewConcreteCommand(receiver *Receiver) *ConcreteCommand {
+	return &ConcreteCommand{receiver: receiver}
+}
+
+// Execute вызов операции Receiver.
 func (c *ConcreteCommand) Execute() {
-	c.receiver.Action()
+	c.receiver.Operation()
 }
 
-// Receiver класс, который знает, как выполнять операции.
-type Receiver struct {
-}
-
-// Action операция, выполняемая получателем.
-func (r *Receiver) Action() {
-	fmt.Println("Receiver: выполнение действия")
-}
-
-// Invoker держатель и инициатор команды.
+// Invoker класс, который вызывает команду.
 type Invoker struct {
 	command Command
 }
@@ -36,16 +38,15 @@ func (i *Invoker) SetCommand(command Command) {
 	i.command = command
 }
 
-// ExecuteCommand выполняет команду.
+// ExecuteCommand вызов команды.
 func (i *Invoker) ExecuteCommand() {
 	i.command.Execute()
 }
 
 func main() {
 	receiver := &Receiver{}
-	command := &ConcreteCommand{receiver}
+	command := NewConcreteCommand(receiver)
 	invoker := &Invoker{}
-
 	invoker.SetCommand(command)
 	invoker.ExecuteCommand()
 }

@@ -2,57 +2,41 @@ package main
 
 import "fmt"
 
-// Observer интерфейс, который должен реализовать каждый наблюдатель.
-type Observer interface {
-	Update(subject *Subject)
+type Subscriber interface {
+	Update(context *Publisher)
 }
 
-// Subject структура, за которой будут следить наблюдатели.
-type Subject struct {
-	state     int
-	observers []Observer
+type Publisher struct {
+	subscribers []Subscriber
+	mainState   int
 }
 
-// SetState устанавливает состояние субъекта и уведомляет наблюдателей.
-func (s *Subject) SetState(state int) {
-	s.state = state
-	s.notifyObservers()
+func (p *Publisher) Subscribe(s Subscriber) {
+	p.subscribers = append(p.subscribers, s)
 }
 
-// Attach добавляет нового наблюдателя к субъекту.
-func (s *Subject) Attach(observer Observer) {
-	s.observers = append(s.observers, observer)
-}
-
-// notifyObservers уведомляет всех наблюдателей о изменении состояния.
-func (s *Subject) notifyObservers() {
-	for _, observer := range s.observers {
-		observer.Update(s)
+func (p *Publisher) NotifySubscribers() {
+	for _, s := range p.subscribers {
+		s.Update(p)
 	}
 }
 
-// ConcreteObserver конкретный наблюдатель, который реагирует на уведомления.
-type ConcreteObserver struct {
+func (p *Publisher) SetState(state int) {
+	p.mainState = state
+	p.NotifySubscribers()
+}
+
+type ConcreteSubscriber struct {
 	id int
 }
 
-// Update реализация метода Update для ConcreteObserver.
-func (o *ConcreteObserver) Update(subject *Subject) {
-	fmt.Printf("Observer %d: subject has new state %d\n", o.id, subject.state)
+func (s *ConcreteSubscriber) Update(context *Publisher) {
+	fmt.Printf("Subscriber %d received update. New state: %d\n", s.id, context.mainState)
 }
 
 func main() {
-	// Создание субъекта
-	subject := &Subject{}
-
-	// Создание и добавление наблюдателей
-	observer1 := &ConcreteObserver{id: 1}
-	observer2 := &ConcreteObserver{id: 2}
-
-	subject.Attach(observer1)
-	subject.Attach(observer2)
-
-	// Изменение состояния субъекта, что приведет к уведомлению наблюдателей
-	subject.SetState(10)
-	subject.SetState(20)
+	publisher := &Publisher{}
+	subscriber1 := &ConcreteSubscriber{id: 1}
+	publisher.Subscribe(subscriber1)
+	publisher.SetState(10)
 }

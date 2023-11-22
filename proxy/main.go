@@ -2,38 +2,45 @@ package main
 
 import "fmt"
 
-// Subject интерфейс, определяющий общие операции для RealSubject и Proxy.
-type Subject interface {
-	Request()
+// ServiceInterface объявляет интерфейс сервиса.
+type ServiceInterface interface {
+	Operation()
 }
 
-// RealSubject реальный объект, операции которого нужно контролировать.
-type RealSubject struct{}
+// Service - реальный сервис, который мы хотим использовать.
+type Service struct{}
 
-func (s *RealSubject) Request() {
-	fmt.Println("RealSubject: Обработка запроса.")
+// Operation - это метод Service, который мы хотим контролировать через прокси.
+func (s *Service) Operation() {
+	fmt.Println("Service operation executed.")
 }
 
-// Proxy контролирует доступ к объекту RealSubject.
+// Proxy - это структура прокси, которая имеет ссылку на сервис.
 type Proxy struct {
-	realSubject *RealSubject
+	realService ServiceInterface
 }
 
-func (p *Proxy) Request() {
-	if p.realSubject == nil {
-		fmt.Println("Proxy: Создание реального объекта.")
-		p.realSubject = &RealSubject{}
-	}
+// NewProxy - конструктор для создания нового прокси.
+func NewProxy(service ServiceInterface) *Proxy {
+	return &Proxy{realService: service}
+}
 
-	// Передача вызова реальному объекту
-	fmt.Println("Proxy: Логика до вызова.")
-	p.realSubject.Request()
-	fmt.Println("Proxy: Логика после вызова.")
+// checkAccess - это метод, который может выполнять проверки перед выполнением операции сервиса.
+func (p *Proxy) checkAccess() bool {
+	// Здесь могут быть некоторые проверки прав доступа.
+	fmt.Println("Proxy check access.")
+	return true
+}
+
+// Operation - метод прокси, который делегирует вызов реальному сервису.
+func (p *Proxy) Operation() {
+	if p.checkAccess() {
+		p.realService.Operation()
+	}
 }
 
 func main() {
-	proxy := &Proxy{}
-
-	// Клиент работает с объектом через прокси.
-	proxy.Request()
+	realService := &Service{}
+	proxy := NewProxy(realService)
+	proxy.Operation()
 }

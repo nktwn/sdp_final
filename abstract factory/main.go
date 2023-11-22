@@ -2,64 +2,45 @@ package main
 
 import "fmt"
 
-// Button интерфейс для продукта типа "Кнопка".
-type Button interface {
-	Paint() string
+type ProductA interface {
+	Use() string
 }
 
-// WinButton конкретная реализация кнопки для Windows.
-type WinButton struct{}
-
-func (b *WinButton) Paint() string {
-	return "Windows Button"
+type ProductB interface {
+	Use() string
 }
 
-// MacButton конкретная реализация кнопки для MacOS.
-type MacButton struct{}
+type ConcreteProductA1 struct{}
 
-func (b *MacButton) Paint() string {
-	return "MacOS Button"
+func (p *ConcreteProductA1) Use() string {
+	return "A1"
 }
 
-// GUIFactory интерфейс абстрактной фабрики для создания элементов GUI.
-type GUIFactory interface {
-	CreateButton() Button
+type ConcreteProductB1 struct{}
+
+func (p *ConcreteProductB1) Use() string {
+	return "B1"
 }
 
-// WinFactory конкретная фабрика для создания элементов GUI для Windows.
-type WinFactory struct{}
-
-func (f *WinFactory) CreateButton() Button {
-	return &WinButton{}
+type Factory interface {
+	CreateProductA() ProductA
+	CreateProductB() ProductB
 }
 
-// MacFactory конкретная фабрика для создания элементов GUI для MacOS.
-type MacFactory struct{}
+type ConcreteFactory1 struct{}
 
-func (f *MacFactory) CreateButton() Button {
-	return &MacButton{}
+func (f *ConcreteFactory1) CreateProductA() ProductA {
+	return &ConcreteProductA1{}
 }
 
-// Application структура, использующая абстрактную фабрику.
-type Application struct {
-	factory GUIFactory
-}
-
-func (a *Application) CreateUI() {
-	button := a.factory.CreateButton()
-	fmt.Println(button.Paint())
+func (f *ConcreteFactory1) CreateProductB() ProductB {
+	return &ConcreteProductB1{}
 }
 
 func main() {
-	var factory GUIFactory
-
-	// Конфигурация для Windows
-	factory = &WinFactory{}
-	app := Application{factory: factory}
-	app.CreateUI()
-
-	// Конфигурация для MacOS
-	factory = &MacFactory{}
-	app = Application{factory: factory}
-	app.CreateUI()
+	factory := &ConcreteFactory1{}
+	productA := factory.CreateProductA()
+	productB := factory.CreateProductB()
+	fmt.Println(productA.Use())
+	fmt.Println(productB.Use())
 }

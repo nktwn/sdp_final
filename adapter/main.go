@@ -2,40 +2,39 @@ package main
 
 import "fmt"
 
-// Target интерфейс, который ожидает клиент.
-type Target interface {
-	Request() string
+// ClientInterface описывает интерфейс, который клиент ожидает использовать.
+type ClientInterface interface {
+	Method(data string)
 }
 
-// Adaptee класс, который нужно адаптировать.
-type Adaptee struct{}
+// Service класс, который имеет несовместимый интерфейс.
+type Service struct{}
 
-// SpecificRequest метод Adaptee, интерфейс которого несовместим с Target.
-func (a *Adaptee) SpecificRequest() string {
-	return "Specific request"
+// ServiceMethod метод, который предоставляет сервис. Он имеет несовместимый интерфейс с клиентом.
+func (s *Service) ServiceMethod(specialData string) {
+	fmt.Println("ServiceMethod вызван с данными:", specialData)
 }
 
-// Adapter адаптирует Adaptee к Target.
+// Adapter класс, который адаптирует сервис к клиентскому интерфейсу.
 type Adapter struct {
-	adaptee *Adaptee
+	adaptedService *Service
 }
 
-// Request реализация метода интерфейса Target.
-func (a *Adapter) Request() string {
-	// Адаптер переводит вызовы из одного интерфейса в другой.
-	return a.adaptee.SpecificRequest()
+// Method реализация клиентского интерфейса, который адаптирует вызов к сервисному методу.
+func (a *Adapter) Method(data string) {
+	// Тут может быть логика преобразования данных в формат, который требуется сервису.
+	specialData := data // Простое присвоение для примера
+	a.adaptedService.ServiceMethod(specialData)
 }
 
-// Клиентский код, ожидающий работать с объектами, реализующими интерфейс Target.
-func clientCode(target Target) {
-	fmt.Println(target.Request())
-}
-
+// Клиентский код, который работает с объектами через клиентский интерфейс.
 func main() {
-	// Клиент хочет использовать интерфейс Target.
-	adaptee := &Adaptee{}
-	adapter := &Adapter{adaptee: adaptee}
+	service := &Service{}
+	adapter := &Adapter{adaptedService: service}
+	clientUsesInterface(adapter, "тестовые данные")
+}
 
-	// Мы можем использовать адаптер, как если бы это был Target.
-	clientCode(adapter)
+// clientUsesInterface функция, показывающая, как клиент может использовать интерфейс.
+func clientUsesInterface(clientInterface ClientInterface, data string) {
+	clientInterface.Method(data)
 }
